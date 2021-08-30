@@ -1,0 +1,89 @@
+app.component('product-display', {
+    props: {
+        premium: {
+            type: Boolean,
+            required: true
+        }
+    },
+    template:
+        /*html*/
+        `
+    <div class="product-display">
+            <div class="product-container">
+                <div class="product-image">
+                    <img :class="{ 'out-of-stock-img': !inStock }" :src="image" >
+                </div>
+                <div class="product-info">
+                    <h1>{{title}}</h1>
+                    <p>{{description}}</p>
+                    lean vue from here <a :href="url">link</a>
+                    <p v-if="inStock">IN Stock</p>
+                    <p v-else>Out of Stock</p>
+                    <p v-show='onSale'>{{saleMessage}}</p>
+                    <p>Shipping: {{shipping}}</p>
+                    <ul>
+                        <li v-for="(variant, index) in variants" :key="variant.id" @mouseover='updateVariant(index)' class='color-circle' :style='{backgroundColor: variant.color}'></li>
+                    </ul>
+                    <ul>
+                        <li v-for="size in sizes">{{size}}</li>
+                    </ul>
+                    <button class="button" @click="addToCart" :disabled="!inStock" :class="{disabledButton: !inStock}">Add to Cart</button>
+                    <button class="button" @click="removeFromCart" :disabled="!inStock" :class="{disabledButton: !inStock}">Remove Item</button>
+                </div>
+            </div>
+            <review-list v-if='reviews.length' :reviews="reviews"></review-list>
+            <review-form @review-submitted="addReview"></review-form>
+        </div>
+    `,
+    data() {
+        return {
+            reviews: [],
+            product: 'Socks',
+            brand: "Vue Mastery",
+            description: "A warm fuzzy pair of socks",
+            url: 'https://vuejs.org/',
+            selectedVariant: 0,
+            onSale: true,
+            variants: [
+                { id: 221, color: 'green', image: './assets/images/socks_green.jpg', quantity: 50 },
+                { id: 222, color: 'blue', image: './assets/images/socks_blue.jpg', quantity: 0 }
+            ],
+            sizes: ['small', 'medium', 'large', 'extra-large']
+        }
+    },
+    methods: {
+        addToCart() {
+            this.$emit('add-to-cart', this.variants[this.selectedVariant].id)
+        },
+        removeFromCart() {
+            this.$emit('remove-from-cart', this.variants[this.selectedVariant].id)
+        },
+        updateVariant(index) {
+            this.selectedVariant = index
+            console.log(index)
+        },
+        addReview(review) {
+            this.reviews.push(review)
+        }
+    },
+    computed: {
+        title() {
+            return this.brand + ' ' + this.product
+        },
+        image() {
+            return this.variants[this.selectedVariant].image
+        },
+        inStock() {
+            return this.variants[this.selectedVariant].quantity
+        },
+        saleMessage() {
+            return this.onSale ? this.brand + ' ' + this.product + ' is on sale ' : " "
+        },
+        shipping() {
+            if (this.premium) {
+                return 'free'
+            }
+            return 2.29
+        }
+    }
+})
